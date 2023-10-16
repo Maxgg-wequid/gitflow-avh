@@ -80,7 +80,7 @@ h,help!     Show this help
 v,verbose   Verbose (more) output
 "
 	local bugfix_branches current_branch width branch len
-	local base develop_sha branch_sha
+	local base master_sha branch_sha
 
 	# Define flags
 	DEFINE_boolean 'verbose' false 'verbose (more) output' v
@@ -109,8 +109,8 @@ v,verbose   Verbose (more) output
 	width=$(($width+3-${#PREFIX}))
 
 	for branch in $bugfix_branches; do
-		base=$(git merge-base "$branch" "$DEVELOP_BRANCH")
-		develop_sha=$(git rev-parse "$DEVELOP_BRANCH")
+		base=$(git merge-base "$branch" "$MASTER_BRANCH")
+		master_sha=$(git rev-parse "$MASTER_BRANCH")
 		branch_sha=$(git rev-parse "$branch")
 		if [ "$branch" = "$current_branch" ]; then
 			printf "* "
@@ -119,11 +119,11 @@ v,verbose   Verbose (more) output
 		fi
 		if flag verbose; then
 			printf "%-${width}s" "${branch#$PREFIX}"
-			if [ "$branch_sha" = "$develop_sha" ]; then
+			if [ "$branch_sha" = "$master_sha" ]; then
 				printf "(no commits yet)"
 			elif [ "$base" = "$branch_sha" ]; then
 				printf "(is behind develop, may ff)"
-			elif [ "$base" = "$develop_sha" ]; then
+			elif [ "$base" = "$master_sha" ]; then
 				printf "(based on latest develop)"
 			else
 				printf "(may be rebased)"
@@ -195,7 +195,7 @@ F,[no]fetch      Fetch from origin before performing local operation
 	# Parse arguments
 	parse_args "$@"
 	eval set -- "${FLAGS_ARGV}"
-	base=${2:-$DEVELOP_BRANCH}
+	base=${2:-$MASTER_BRANCH}
 
 	require_base_is_local_branch "$base"
 	gitflow_require_name_arg
@@ -298,7 +298,7 @@ no-ff!                 Never fast-forward during the merge
 	require_branch "$BRANCH"
 
 	BASE_BRANCH=$(gitflow_config_get_base_branch $BRANCH)
-	BASE_BRANCH=${BASE_BRANCH:-$DEVELOP_BRANCH}
+	BASE_BRANCH=${BASE_BRANCH:-$MASTER_BRANCH}
 	git_local_branch_exists "$BASE_BRANCH" || die "The base '$BASE_BRANCH' doesn't exists locally or is not a branch. Can't finish the bugfix branch '$BRANCH'."
 
 	# Detect if we're restoring from a merge conflict
@@ -596,7 +596,7 @@ showcommands!    Show git commands while executing them
 	fi
 
 	base=$(gitflow_config_get_base_branch $BRANCH)
-	base=${base:-$DEVELOP_BRANCH}
+	base=${base:-$MASTER_BRANCH}
 
 	git_do diff "$base...$BRANCH"
 }
@@ -656,7 +656,7 @@ p,[no]preserve-merges  Preserve merges
 
 
 	BASE_BRANCH=$(gitflow_config_get_base_branch $BRANCH)
-	BASE_BRANCH=${BASE_BRANCH:-$DEVELOP_BRANCH}
+	BASE_BRANCH=${BASE_BRANCH:-$MASTER_BRANCH}
 
 	warn "Will try to rebase '$NAME' which is based on '$BASE_BRANCH'..."
 	if ! git_config_bool_exists "rebase.autostash"; then
@@ -787,7 +787,7 @@ r,[no]remote     Delete remote branch
 	require_branch "$BRANCH"
 
 	BASE_BRANCH=$(gitflow_config_get_base_branch $BRANCH)
-	BASE_BRANCH=${BASE_BRANCH:-$DEVELOP_BRANCH}
+	BASE_BRANCH=${BASE_BRANCH:-$MASTER_BRANCH}
 
 	run_pre_hook "$NAME" "$ORIGIN" "$BRANCH"
 
@@ -798,7 +798,7 @@ r,[no]remote     Delete remote branch
 		if git_local_branch_exists "$BASE_BRANCH"; then
 			git_do checkout "$BASE_BRANCH"
 		else
-			git_do checkout "$DEVELOP_BRANCH" || die "Could not check out branch '$DEVELOP_BRANCH'."
+			git_do checkout "$MASTER_BRANCH" || die "Could not check out branch '$MASTER_BRANCH'."
 		fi
 	fi
 
