@@ -29,6 +29,8 @@ See the Wiki for up-to-date [Installation Instructions](https://github.com/peter
 Installing git-flow manually
 ----------------------------
 
+Documantation from [Official Manual Installation](https://github.com/nvie/gitflow/wiki/Manual-installation)
+
 If you prefer a manual installation, please use the following instructions:
 
 	$ git clone --recursive https://github.com/Maxgg-wequid/gitflow-avh.git
